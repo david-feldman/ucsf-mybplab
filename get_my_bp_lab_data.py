@@ -27,11 +27,9 @@ def login_to_synapse(creds):
         my_password = creds[1]
         syn.login(my_username, my_password)
         return syn
-    except synapseclient.exceptions.SynapseAuthenticationError:
-        print('Invalid credentials. Please try again.')
     except:
-        print('Something unexpected went wrong during login.')
-
+        print('Invalid credentials. Please try again.')
+        sys.exit()
 def get_data_from_synapse_table(syn_connection, curr_table):
     print('Retrieving data from {} ({})'.format(curr_table['table_name'], curr_table['table_label']))
     table = syn_connection.tableQuery('select * from ' + curr_table['table_name'])

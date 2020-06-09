@@ -25,7 +25,9 @@ The program will prompt you to enter your Synapse credentials to access MyBPLab 
 * cog_task_data
 * intervention_task_data
 
-Formatted data CSV files will be in the appropriate sub-folder above.
+Formatted data CSV files will be in the appropriate sub-folder above. Note: the Syncapse API throws several errors when downloading Synapse tables such as the one that follows. These should not cause alarm, and simply indicate that Synapse's memory mangement is not optimal:
+
+    [WARNING] get_my_bp_lab_data.py:44: DtypeWarning: Columns (8,12,30,31,32,33,34,35,36,37,91) have mixed types.Specify dtype option on import or set low_memory=False.
 
 *Originally developed by David Feldman (davidelanfeldman@gmail.com)*
 
