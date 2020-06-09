@@ -13,7 +13,7 @@ To download format, and output data simply run the following command to run the 
    python get_my_bp_lab_data.py
   ```
 
-Note that the first time the program runs it may take ~1 hour to download data from Synapse, due to known limitations in the Synapse API. In most cases, the program takes 5-10 minutes to run. Data will be downloaded to a ```data_result``` folder and will contain several sub-folders:
+The program will prompt you to enter your Synapse credentials to access MyBPLab data! Note that the first time the program runs it may take ~1 hour to download data from Synapse, due to known limitations in the Synapse API. In most cases, the program takes 5-10 minutes to run. Data will be downloaded to a ```data_result``` folder and will contain several sub-folders:
 * bodymap_data
 * check_in_and_ep_data
 * cog_task_data
