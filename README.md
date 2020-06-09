@@ -6,10 +6,12 @@ In order to run this code you will first need to download and install [Python 3.
 
     pip install -r requirements.txt
 
-## Running the code to downloading and Formatting Data
+## Running the code to Download and Format Data
 To download format, and output data simply run the following command to run the [get_my_bp_lab_data.py](get_my_bp_lab_data.py) program:
-   
+  
+  ```
    python get_my_bp_lab_data.py
+  ```
 
 Note that the first time the program runs it may take ~1 hour to download data from Synapse, due to known limitations in the Synapse API. In most cases, the program takes 5-10 minutes to run. Data will be downloaded to a ```data_result``` folder and will contain several sub-folders:
 * bodymap_data
