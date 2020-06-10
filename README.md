@@ -6,11 +6,11 @@ In order to run this code you will first need to download and install [Python 3.
 
     cd C:\Users\Amie\Downloads\ucsf-mybplab-master\ucsf-mybplab-master\
 
-Next, you will need to install required Python packages via running the following command in terminal:
+Next, you will need to install required Python packages via running the following command in terminal (Mac):
 
     pip install -r requirements.txt 
     
-On some windows machines instead use the following command:
+On Windows machines instead use the following command:
 
     py -m pip install -r requirements.txt
 
