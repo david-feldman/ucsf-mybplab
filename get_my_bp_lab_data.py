@@ -961,8 +961,11 @@ def extract_and_format_int_json_data(int_json_df):
 def main():
     #static mapping of data tables
     table_dicts = get_table_mapping_from_local_file('all_tables.csv')
+    #comment out line below and uncomment following line with info added to not log in every time
     syn = login_to_synapse(get_synapse_credentials())
     #syn = login_to_synapse(('EMAIL HERE','PASSWORD HERE'))
+    
+    #checks for correct app versions, returns all records. Special condition to not filter out Enhnace Profile data. 
     relevant_table_dicts, record_list = get_relevant_tables_and_record_list(syn, table_dicts)
 
     print("\n***** DOWNLOADING DATA FROM SYNAPSE TABLES *****")
