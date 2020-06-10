@@ -1005,31 +1005,31 @@ def main():
         os.makedirs('data_results/intervention_task_data/standalone_intervention_data')
 
 
-    # write data to folders
-    #BODYMAP
-        full_bmap_df.to_csv('data_results/bodymap_data/bodymap_full_results.csv',index=False)
-        summary_bmap_df.to_csv('data_results/bodymap_data/bodymap_summary_results.csv',index=False)
+# write data to folders
+#BODYMAP
+    full_bmap_df.to_csv('data_results/bodymap_data/bodymap_full_results.csv',index=False)
+    summary_bmap_df.to_csv('data_results/bodymap_data/bodymap_summary_results.csv',index=False)
 
-    #INTERVENTION
-        int_results_df.to_csv('data_results/intervention_task_data/intervention_results.csv',index=False)
-        for int_type in int_results_df.interventionType.unique():
-            int_results_df[int_results_df["interventionType"] == int_type].to_csv('data_results/intervention_task_data/standalone_intervention_data/'+int_type+'.csv',index=False)
+#INTERVENTION
+    int_results_df.to_csv('data_results/intervention_task_data/intervention_results.csv',index=False)
+    for int_type in int_results_df.interventionType.unique():
+        int_results_df[int_results_df["interventionType"] == int_type].to_csv('data_results/intervention_task_data/standalone_intervention_data/'+int_type+'.csv',index=False)
 
-    #COG
-        anagram_output.to_csv('data_results/cog_task_data/anagram_task_results.csv',index=False)
-        memory_output.to_csv('data_results/cog_task_data/memory_task_results.csv',index=False)
-        number_span_output.to_csv('data_results/cog_task_data/number_span_task_results.csv',index=False)
-        color_word_output.to_csv('data_results/cog_task_data/color_word_task_results.csv',index=False)
-        trails_output.to_csv('data_results/cog_task_data/trails_task_results.csv',index=False)
-        trails_condensed_output.to_csv('data_results/cog_task_data/trails_task_condensed_results.csv',index=False)
-        attention_output.to_csv('data_results/cog_task_data/attention_task_results.csv',index=False)
+#COG
+    anagram_output.to_csv('data_results/cog_task_data/anagram_task_results.csv',index=False)
+    memory_output.to_csv('data_results/cog_task_data/memory_task_results.csv',index=False)
+    number_span_output.to_csv('data_results/cog_task_data/number_span_task_results.csv',index=False)
+    color_word_output.to_csv('data_results/cog_task_data/color_word_task_results.csv',index=False)
+    trails_output.to_csv('data_results/cog_task_data/trails_task_results.csv',index=False)
+    trails_condensed_output.to_csv('data_results/cog_task_data/trails_task_condensed_results.csv',index=False)
+    attention_output.to_csv('data_results/cog_task_data/attention_task_results.csv',index=False)
 
-    #EP & CHECK-IN
-        enhanced_profile_data.to_csv('data_results/check_in_and_ep_data/enhanced_profile_merged_results.csv',index=False)
-        check_in_data.to_csv('data_results/check_in_and_ep_data/check_in_merged_results.csv',index=False)
-        for tab in mybplab_table_dataframes:
-            if "Enhance Profile" in tab["table_label"]:
-                tab["dataframe"].to_csv("data_results/check_in_and_ep_data/standalone_ep_tables/"+tab["table_label"]+".csv", index=False)
+#EP & CHECK-IN
+    enhanced_profile_data.to_csv('data_results/check_in_and_ep_data/enhanced_profile_merged_results.csv',index=False)
+    check_in_data.to_csv('data_results/check_in_and_ep_data/check_in_merged_results.csv',index=False)
+    for tab in mybplab_table_dataframes:
+        if "Enhance Profile" in tab["table_label"]:
+            tab["dataframe"].to_csv("data_results/check_in_and_ep_data/standalone_ep_tables/"+tab["table_label"]+".csv", index=False)
 
     print("\n***** FINSHED WRITING OUTPUT CSV FILES *****")
 
