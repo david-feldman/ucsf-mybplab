@@ -202,7 +202,7 @@ def extract_bodymap_data(bmap_front_df, bmap_back_df):
             full = {}
             summary.update({"healthCode":row["healthCode"],"recordId":row["recordId"],'answers.sex':row['answers.sex'],'table_label':row['table_label'],'type':row['type']})
             full.update({"healthCode":row["healthCode"],"recordId":row["recordId"],'answers.sex':row['answers.sex'],'table_label':row['table_label'],'type':row['type']})
-            with open(row['path']) as f:
+            with open(row['path'],encoding="utf8") as f:
                  data = json.load(f)
             ctr = 0
             first_click = None
@@ -307,7 +307,7 @@ def extract_and_format_cog_json_data(cog_json_df):
     attention_dicts = []
 
     for idx, row in cog_json_df.iterrows():
-        with open(row['path']) as f:
+        with open(row['path'],encoding="utf8") as f:
                   data = json.load(f)
 
         #ANAGRAM TASK
@@ -707,7 +707,7 @@ def extract_and_format_int_json_data(int_json_df):
     question_var_list = ['question_used_audio','question_weekday_naps','question_how_feeling','question_mind_busy','question_clearly_focus_bike','question_distracted','question_how_like','question_reduce_stress','question_relaxed','question_sleepy','question_emotion_specificity','question_how_stressful','question_worried_sleep','question_three_things','question_name_object','question_three_things','question_body_feels','question_which_emotions','question_stressful_situation']
     question_dict = dict(zip(question_list,question_var_list))
     for idx, row in int_json_df.iterrows():
-        with open(row['path']) as f:
+        with open(row['path'],encoding="utf8") as f:
                   data = json.load(f)
         row_data = {}
         row_data["answers.Intervention_Task_Type"] = row["answers.Intervention_Task_Type"]
@@ -988,18 +988,39 @@ def main():
 
     print("\n***** WRITING OUTPUT CSV FILES *****")
 
-    full_bmap_df.to_csv('bodymap_full_results.csv',index=False)
-    summary_bmap_df.to_csv('bodymap_summary_results.csv',index=False)
-    int_results_df.to_csv('intervention_results.csv',index=False)
-    anagram_output.to_csv('anagram_task_results.csv',index=False)
-    memory_output.to_csv('memory_task_results.csv',index=False)
-    number_span_output.to_csv('number_span_task_results.csv',index=False)
-    color_word_output.to_csv('color_word_task_results.csv',index=False)
-    trails_output.to_csv('trails_task_results.csv',index=False)
-    trails_condensed_output.to_csv('trails_task_condensed_results.csv',index=False)
-    attention_output.to_csv('attention_task_results.csv',index=False)
-    enhanced_profile_data.to_csv('enhanced_profile_merged_results.csv',index=False)
-    check_in_data.to_csv('check_in_merged_results.csv',index=False)
+    # make folders to save data in
+    if not os.path.exists('data_results'):
+        os.makedirs('data_results')
+    if not os.path.exists('data_results/bodymap_data'):
+        os.makedirs('data_results/bodymap_data')
+    if not os.path.exists('data_results/check_in_and_ep_data'):
+        os.makedirs('data_results/check_in_and_ep_data')
+    if not os.path.exists('data_results/cog_task_data'):
+        os.makedirs('data_results/cog_task_data')
+    if not os.path.exists('data_results/intervention_task_data'):
+        os.makedirs('data_results/intervention_task_data')
+
+
+    # write data to folders 
+    #BODYMAP  
+        full_bmap_df.to_csv('data_results/bodymap_data/bodymap_full_results.csv',index=False)
+        summary_bmap_df.to_csv('data_results/bodymap_data/bodymap_summary_results.csv',index=False)
+
+    #INTERVENTION
+        int_results_df.to_csv('data_results/intervention_task_data/intervention_results.csv',index=False)
+
+    #COG
+        anagram_output.to_csv('anagram_task_results.csv',index=False)
+        memory_output.to_csv('memory_task_results.csv',index=False)
+        number_span_output.to_csv('data_results/cog_task_data/number_span_task_results.csv',index=False)
+        color_word_output.to_csv('data_results/cog_task_data/color_word_task_results.csv',index=False)
+        trails_output.to_csv('data_results/cog_task_data/trails_task_results.csv',index=False)
+        trails_condensed_output.to_csv('data_results/cog_task_data/trails_task_condensed_results.csv',index=False)
+        attention_output.to_csv('data_results/cog_task_data/attention_task_results.csv',index=False)
+        
+    #EP & CHECK-IN
+        enhanced_profile_data.to_csv('data_results/check_in_and_ep_data/enhanced_profile_merged_results.csv',index=False)
+        check_in_data.to_csv('data_results/check_in_and_ep_data/check_in_merged_results.csv',index=False)
 
     print("\n***** FINSHED WRITING OUTPUT CSV FILES *****")
 

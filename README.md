@@ -19,11 +19,12 @@ On some windows machines instead use the following command:
 
     py get_my_bp_lab_data.py
 
-The program will prompt you to enter your Synapse credentials to access MyBPLab data. Note that the first time the program runs it may take several hours to download data from Synapse, due to known limitations in the Synapse API. After the first run, the program takes ~10 minutes to run. Data will be downloaded to a ```data_result``` folder and will contain several sub-folders:
+The program will prompt you to enter your Synapse credentials to access MyBPLab data. Note that the first time the program runs it may take several hours to download data from Synapse, due to known limitations in the Synapse API. After the first run, the program takes ~10 minutes to run. Data will be downloaded to a ```data_results``` folder and will contain several sub-folders:
 * bodymap_data
 * check_in_and_ep_data
 * cog_task_data
 * intervention_task_data
+
 
 Formatted data CSV files will be in the appropriate sub-folder above. Note: the Synapse API throws several errors when downloading Synapse tables such as the one that follows. These should not cause alarm, and simply indicate that Synapse's memory mangement is not optimal:
 
