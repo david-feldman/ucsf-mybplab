@@ -1012,6 +1012,7 @@ def main():
 
     #INTERVENTION
         int_results_df.to_csv('data_results/intervention_task_data/intervention_results.csv',index=False)
+        print()
         for int_type in int_results_df.interventionType.unique():
             int_results_df[int_results_df["interventionType"] == int_type].to_csv('data_results/intervention_task_data/standalone_intervention_data/'+int_type+'.csv',index=False)
             print(int_type)
