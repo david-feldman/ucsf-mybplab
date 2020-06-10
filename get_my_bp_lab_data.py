@@ -1014,10 +1014,11 @@ def main():
         int_results_df.to_csv('data_results/intervention_task_data/intervention_results.csv',index=False)
         for int_type in int_results_df.interventionType.unique():
             int_results_df[int_results_df["interventionType"] == int_type].to_csv('data_results/intervention_task_data/standalone_intervention_data/'+int_type+'.csv',index=False)
+            print(int_type)
 
     #COG
-        anagram_output.to_csv('anagram_task_results.csv',index=False)
-        memory_output.to_csv('memory_task_results.csv',index=False)
+        anagram_output.to_csv('data_results/cog_task_data/anagram_task_results.csv',index=False)
+        memory_output.to_csv('data_results/cog_task_data/memory_task_results.csv',index=False)
         number_span_output.to_csv('data_results/cog_task_data/number_span_task_results.csv',index=False)
         color_word_output.to_csv('data_results/cog_task_data/color_word_task_results.csv',index=False)
         trails_output.to_csv('data_results/cog_task_data/trails_task_results.csv',index=False)
@@ -1029,6 +1030,7 @@ def main():
         check_in_data.to_csv('data_results/check_in_and_ep_data/check_in_merged_results.csv',index=False)
         for tab in mybplab_table_dataframes:
             if "Enhance Profile" in tab["table_label"]:
+                print(tab["table_label"])
                 tab["dataframe"].to_csv("data_results/check_in_and_ep_data/standalone_ep_tables/"+tab["table_label"]+".csv", index=False)
 
     print("\n***** FINSHED WRITING OUTPUT CSV FILES *****")
