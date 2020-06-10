@@ -1005,17 +1005,15 @@ def main():
         os.makedirs('data_results/intervention_task_data/standalone_intervention_data')
 
 
-    # write data to folders 
-    #BODYMAP  
+    # write data to folders
+    #BODYMAP
         full_bmap_df.to_csv('data_results/bodymap_data/bodymap_full_results.csv',index=False)
         summary_bmap_df.to_csv('data_results/bodymap_data/bodymap_summary_results.csv',index=False)
 
     #INTERVENTION
         int_results_df.to_csv('data_results/intervention_task_data/intervention_results.csv',index=False)
-        print()
         for int_type in int_results_df.interventionType.unique():
             int_results_df[int_results_df["interventionType"] == int_type].to_csv('data_results/intervention_task_data/standalone_intervention_data/'+int_type+'.csv',index=False)
-            print(int_type)
 
     #COG
         anagram_output.to_csv('data_results/cog_task_data/anagram_task_results.csv',index=False)
@@ -1031,7 +1029,6 @@ def main():
         check_in_data.to_csv('data_results/check_in_and_ep_data/check_in_merged_results.csv',index=False)
         for tab in mybplab_table_dataframes:
             if "Enhance Profile" in tab["table_label"]:
-                print(tab["table_label"])
                 tab["dataframe"].to_csv("data_results/check_in_and_ep_data/standalone_ep_tables/"+tab["table_label"]+".csv", index=False)
 
     print("\n***** FINSHED WRITING OUTPUT CSV FILES *****")
