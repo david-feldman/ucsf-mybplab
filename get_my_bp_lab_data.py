@@ -996,10 +996,10 @@ def main():
         os.makedirs('data_results')
     if not os.path.exists('data_results/bodymap_data'):
         os.makedirs('data_results/bodymap_data')
-    if not os.path.exists('data_results/check_in_and_ep_data'):
-        os.makedirs('data_results/check_in_and_ep_data')
-    if not os.path.exists('data_results/check_in_and_ep_data/standalone_ep_tables'):
-        os.makedirs('data_results/check_in_and_ep_data/standalone_ep_tables')
+    if not os.path.exists('data_results/check_in_background_and_ep_data'):
+        os.makedirs('data_results/check_in_background_and_ep_data')
+    if not os.path.exists('data_results/check_in_background_and_ep_data/standalone_ep_tables'):
+        os.makedirs('data_results/check_in_background_and_ep_data/standalone_ep_tables')
     if not os.path.exists('data_results/cog_task_data'):
         os.makedirs('data_results/cog_task_data')
     if not os.path.exists('data_results/intervention_task_data'):
@@ -1028,11 +1028,13 @@ def main():
     attention_output.to_csv('data_results/cog_task_data/attention_task_results.csv',index=False)
 
 #EP & CHECK-IN
-    enhanced_profile_data.to_csv('data_results/check_in_and_ep_data/enhanced_profile_merged_results.csv',index=False)
-    check_in_data.to_csv('data_results/check_in_and_ep_data/check_in_merged_results.csv',index=False)
+    enhanced_profile_data.to_csv('data_results/check_in_background_and_ep_data/enhanced_profile_merged_results.csv',index=False)
+    check_in_data.to_csv('data_results/check_in_background_and_ep_data/check_in_merged_results.csv',index=False)
     for tab in mybplab_table_dataframes:
         if "Enhance Profile" in tab["table_label"]:
-            tab["dataframe"].to_csv("data_results/check_in_and_ep_data/standalone_ep_tables/"+tab["table_label"]+".csv", index=False)
+            tab["dataframe"].to_csv("data_results/check_in_background_and_ep_data/standalone_ep_tables/"+tab["table_label"]+".csv", index=False)
+        elif "Background Survey-v8" == tab["table_label"]:
+            tab["dataframe"].to_csv("data_results/check_in_background_and_ep_data/"+tab["table_label"]+".csv", index=False)
 
     print("\n***** FINSHED WRITING OUTPUT CSV FILES *****")
 
