@@ -12,6 +12,8 @@ import json
 from datetime import datetime
 from fuzzywuzzy import fuzz
 import pytz
+#import psutil
+
 
 def get_synapse_credentials():
     print('Please input your Synapse username and password.')
@@ -964,17 +966,22 @@ def main():
     #comment out line below and uncomment following line with info added to not log in every time
     syn = login_to_synapse(get_synapse_credentials())
     #syn = login_to_synapse(('EMAIL HERE','PASSWORD HERE'))
-    
-    #checks for correct app versions, returns all records. Special condition to not filter out Enhnace Profile data. 
+
+    #checks for correct app versions, returns all records. Special condition to not filter out Enhnace Profile data.
     relevant_table_dicts, record_list = get_relevant_tables_and_record_list(syn, table_dicts)
 
-    print("\n***** DOWNLOADING DATA FROM SYNAPSE TABLES *****")
-    mybplab_table_dataframes = get_data_from_many_tables(syn,relevant_table_dicts, record_list)
+    for attempt in range(10):
+        try:
+            print("\n***** DOWNLOADING DATA FROM SYNAPSE TABLES *****")
+            mybplab_table_dataframes = get_data_from_many_tables(syn,relevant_table_dicts, record_list)
 
-    #create_tables_and_columns_csv(mybplab_table_dataframes)
-    print("\n***** DOWNLOADING JSON DATA FROM SYNAPSE *****")
-    cog_json_df, int_json_df, bmap_front_json_df, bmap_back_json_df  = download_jsons_and_assemble_metadata(syn,mybplab_table_dataframes)
-    unique_sexes = get_sexes(mybplab_table_dataframes)
+            #create_tables_and_columns_csv(mybplab_table_dataframes)
+            print("\n***** DOWNLOADING JSON DATA FROM SYNAPSE *****")
+            cog_json_df, int_json_df, bmap_front_json_df, bmap_back_json_df  = download_jsons_and_assemble_metadata(syn,mybplab_table_dataframes)
+            unique_sexes = get_sexes(mybplab_table_dataframes)
+        except synapseclient.core.exceptions.SynapseTimeoutError:
+            print('Connection lost - retrying!')
+        break
 
     print("\n***** EXTRACTING BODYMAP DATA FROM JSONS *****")
     full_bmap_df, summary_bmap_df =  extract_bodymap_data(bmap_front_json_df.merge(unique_sexes,how='left', on = ['healthCode']),bmap_back_json_df.merge(unique_sexes,how='left', on = ['healthCode']))
@@ -1037,7 +1044,8 @@ def main():
             tab["dataframe"].to_csv("data_results/check_in_background_and_ep_data/"+tab["table_label"]+".csv", index=False)
 
     print("\n***** FINSHED WRITING OUTPUT CSV FILES *****")
-
+    #process = psutil.Process(os.getpid())
+    #print(process.memory_info().rss)
 
 main()
 

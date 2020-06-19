@@ -23,7 +23,7 @@ On some windows machines instead use the following command:
 
     py get_my_bp_lab_data.py
 
-The program will prompt you to enter your Synapse credentials to access MyBPLab data. Note that the first time the program runs it may take several hours to download data from Synapse, due to known limitations in the Synapse API. After the first run, the program takes ~10 minutes to run. Data will be downloaded to a ```data_results``` folder and will contain several sub-folders:
+The program will prompt you to enter your Synapse credentials to access MyBPLab data. Note that the first time the program runs it may take several hours to download data from Synapse, due to known limitations in the Synapse API. Also note that the program requires at least 3GB of free RAM in order to run. After the first run, the program takes ~10 minutes to run. Data will be downloaded to a ```data_results``` folder and will contain several sub-folders:
 * bodymap_data
 * check_in_and_ep_data
 * cog_task_data
