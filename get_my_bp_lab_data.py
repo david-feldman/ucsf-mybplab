@@ -9,7 +9,7 @@ import multiprocessing
 import os
 from synapseclient import build_table
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from fuzzywuzzy import fuzz
 import pytz
 #import psutil
@@ -252,6 +252,11 @@ def extract_bodymap_data(bmap_front_df, bmap_back_df):
     summary_df = pd.DataFrame(output_summary_dicts)
     return full_df, summary_df
 
+#function to convert pandas column to local time
+def createdOn_tz_convert(x):
+        return (datetime.fromtimestamp(x.createdOn/1000.0) + timedelta(hours=x.createdOnTimeZone/100)).strftime('%Y-%m-%d %H:%M:%S.%f')
+        #return pd.to_datetime(x.createdOn,unit='ms').dt.tz_localize('utc').dt.tz_convert(pytz.timezone(x.createdOnTimeZone)) 
+
 
 def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes):
     enhanced_profile_data = pd.DataFrame()
@@ -297,6 +302,8 @@ def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes):
     ep_extra_data = ep_extra_data.dropna(subset=['healthCode'])
     enhanced_profile_data  = enhanced_profile_data.append(ep_extra_data)
     check_in_data['checkinNum'] = check_in_data.groupby('healthCode')['createdOn'].rank(method='first')
+    check_in_data['createdOn'] = check_in_data.apply(createdOn_tz_convert,axis=1) 
+
     return enhanced_profile_data, check_in_data
 
 def extract_and_format_cog_json_data(cog_json_df):
@@ -684,7 +691,7 @@ def extract_and_format_cog_json_data(cog_json_df):
 
                     attention_dicts.append(tmp)
 
-
+ 
     anagram_output = pd.DataFrame(sorted(anagram_dicts, key=len, reverse=True))
     memory_output = pd.DataFrame(sorted(memory_dicts, key=len, reverse=True))
     number_span_output = pd.DataFrame(sorted(number_span_dicts, key=len, reverse=True))
@@ -692,6 +699,8 @@ def extract_and_format_cog_json_data(cog_json_df):
     trails_output = pd.DataFrame(sorted(trails_dicts, key=len, reverse=True))
     trails_condensed_output = pd.DataFrame(sorted(trails_condensed_dicts, key=len, reverse=True))
     attention_output = pd.DataFrame(sorted(attention_dicts, key=len, reverse=True))
+    #process = psutil.Process(os.getpid())
+    #print(process.memory_info().rss)
 
     return anagram_output, memory_output, number_span_output, color_word_output, trails_output, trails_condensed_output, attention_output
 
@@ -1039,13 +1048,15 @@ def main():
     check_in_data.to_csv('data_results/check_in_background_and_ep_data/check_in_merged_results.csv',index=False)
     for tab in mybplab_table_dataframes:
         if "Enhance Profile" in tab["table_label"]:
+            tab["dataframe"]['createdOn'] = tab["dataframe"].apply(createdOn_tz_convert,axis=1) 
             tab["dataframe"].to_csv("data_results/check_in_background_and_ep_data/standalone_ep_tables/"+tab["table_label"]+".csv", index=False)
         elif "Background Survey-v8" == tab["table_label"]:
+            tab["dataframe"] = tab["dataframe"].fillna({'createdOnTimeZone':0})
+            tab["dataframe"]['createdOn'] = tab["dataframe"].apply(createdOn_tz_convert,axis=1)
             tab["dataframe"].to_csv("data_results/check_in_background_and_ep_data/"+tab["table_label"]+".csv", index=False)
 
     print("\n***** FINSHED WRITING OUTPUT CSV FILES *****")
-    #process = psutil.Process(os.getpid())
-    #print(process.memory_info().rss)
+
 
 main()
 
