@@ -255,7 +255,7 @@ def extract_bodymap_data(bmap_front_df, bmap_back_df):
 #function to convert pandas column to local time
 def createdOn_tz_convert(x):
         return (datetime.fromtimestamp(x.createdOn/1000.0) + timedelta(hours=x.createdOnTimeZone/100)).strftime('%Y-%m-%d %H:%M:%S.%f')
-        #return pd.to_datetime(x.createdOn,unit='ms').dt.tz_localize('utc').dt.tz_convert(pytz.timezone(x.createdOnTimeZone)) 
+        #return pd.to_datetime(x.createdOn,unit='ms').dt.tz_localize('utc').dt.tz_convert(pytz.timezone(x.createdOnTimeZone))
 
 
 def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes):
@@ -290,7 +290,7 @@ def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes):
             tab["dataframe"] = tab["dataframe"].drop(columns=['externalId','dataGroups','validationErrors','answers.whoAreYouWith','substudyMemberships','bodyMapFront_bodyMapFront.json','Intervention_Result.json','rawData','Cog_Result.json','bodyMapBack_bodyMapBack.json','BP_phone_rawdata.json','BP_watch_rawdata.json','blood_pressure_stress_recorder_bloodPressure.json','blood_pressure_watch_recorder.json','answers','answers.napsTodayPart','answers.loveThemPart','answers.loveMeTodayPart','answers.RunMode','answers.CuffMode','answers.morningEmotionStress','answers.morningEmotionInControl','answers.morningEmotionJoy','answers.morningEmotionSleepTime','answers.morningEmotionSleepTime.timezone','bodyMapFront','bodyMapBack','bodyMapBack_bodyMapBack','bodyMapFront_bodyMapFront'],errors='ignore')
             if "v12" in tab["table_label"] or "v14" in tab["table_label"]:
                 tab["dataframe"]["answers.completion_sbp_offset"] = tab["dataframe"]["answers.completion_sbp_offset"] + 64
-                tab["dataframe"]["answers.completion_dbp_offset"] = tab["dataframe"]["answers.completion_dbp_offset"] + 128
+                tab["dataframe"]["answers.completion_dbp_offset"] = tab["dataframe"]["answers.completion_dbp_offset"] + 126
                 tab["dataframe"] = tab["dataframe"].rename({'answers.watchDeviceName':'answers.watchname','answers.measured_with_watch':'answers.watchYN','answers.completion_stress_baseline':'answers.baseline_stress_score','answers.completion_sbp_offset':'answers.calibrationvalue_sbp','answers.completion_dbp_offset':'answers.calibrationvalue_dbp','answers.validation_sbp_result':'answers.cuffvalue_sbp','answers.validation_dbp_result':'answers.cuffvalue_dbp','answers.Output_SBP':'answers.sensorvalue_DBP','answers.Output_DBP':'answers.sensorvalue_SBP','answers.Output_HR':'answers.sensorvalue_HR'},axis=1,errors="ignore")
 
             check_in_data = check_in_data.append(tab["dataframe"])
@@ -302,7 +302,7 @@ def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes):
     ep_extra_data = ep_extra_data.dropna(subset=['healthCode'])
     enhanced_profile_data  = enhanced_profile_data.append(ep_extra_data)
     check_in_data['checkinNum'] = check_in_data.groupby('healthCode')['createdOn'].rank(method='first')
-    check_in_data['createdOn'] = check_in_data.apply(createdOn_tz_convert,axis=1) 
+    check_in_data['createdOn'] = check_in_data.apply(createdOn_tz_convert,axis=1)
 
     return enhanced_profile_data, check_in_data
 
@@ -691,7 +691,7 @@ def extract_and_format_cog_json_data(cog_json_df):
 
                     attention_dicts.append(tmp)
 
- 
+
     anagram_output = pd.DataFrame(sorted(anagram_dicts, key=len, reverse=True))
     memory_output = pd.DataFrame(sorted(memory_dicts, key=len, reverse=True))
     number_span_output = pd.DataFrame(sorted(number_span_dicts, key=len, reverse=True))
@@ -1048,7 +1048,7 @@ def main():
     check_in_data.to_csv('data_results/check_in_background_and_ep_data/check_in_merged_results.csv',index=False)
     for tab in mybplab_table_dataframes:
         if "Enhance Profile" in tab["table_label"]:
-            tab["dataframe"]['createdOn'] = tab["dataframe"].apply(createdOn_tz_convert,axis=1) 
+            tab["dataframe"]['createdOn'] = tab["dataframe"].apply(createdOn_tz_convert,axis=1)
             tab["dataframe"].to_csv("data_results/check_in_background_and_ep_data/standalone_ep_tables/"+tab["table_label"]+".csv", index=False)
         elif "Background Survey-v8" == tab["table_label"]:
             tab["dataframe"] = tab["dataframe"].fillna({'createdOnTimeZone':0})
