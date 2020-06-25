@@ -306,7 +306,7 @@ def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes):
 
     return enhanced_profile_data, check_in_data
 
-def extract_and_format_cog_json_data(cog_json_df):
+def extract_and_format_cog_json_data(cog_json_df, check_in_data):
     anagram_dicts = []
     memory_dicts = []
     number_span_dicts = []
@@ -691,14 +691,15 @@ def extract_and_format_cog_json_data(cog_json_df):
 
                     attention_dicts.append(tmp)
 
-
-    anagram_output = pd.DataFrame(sorted(anagram_dicts, key=len, reverse=True))
-    memory_output = pd.DataFrame(sorted(memory_dicts, key=len, reverse=True))
-    number_span_output = pd.DataFrame(sorted(number_span_dicts, key=len, reverse=True))
-    color_word_output = pd.DataFrame(sorted(color_word_dicts, key=len, reverse=True))
-    trails_output = pd.DataFrame(sorted(trails_dicts, key=len, reverse=True))
-    trails_condensed_output = pd.DataFrame(sorted(trails_condensed_dicts, key=len, reverse=True))
-    attention_output = pd.DataFrame(sorted(attention_dicts, key=len, reverse=True))
+    
+    check_in_data_nums = check_in_data[["recordId","checkinNum"]]
+    anagram_output = pd.DataFrame(sorted(anagram_dicts, key=len, reverse=True)).merge(check_in_data_nums,how='left', on = ['recordId'])
+    memory_output = pd.DataFrame(sorted(memory_dicts, key=len, reverse=True)).merge(check_in_data_nums,how='left', on = ['recordId'])
+    number_span_output = pd.DataFrame(sorted(number_span_dicts, key=len, reverse=True)).merge(check_in_data_nums,how='left', on = ['recordId'])
+    color_word_output = pd.DataFrame(sorted(color_word_dicts, key=len, reverse=True)).merge(check_in_data_nums,how='left', on = ['recordId'])
+    trails_output = pd.DataFrame(sorted(trails_dicts, key=len, reverse=True)).merge(check_in_data_nums,how='left', on = ['recordId'])
+    trails_condensed_output = pd.DataFrame(sorted(trails_condensed_dicts, key=len, reverse=True)).merge(check_in_data_nums,how='left', on = ['recordId'])
+    attention_output = pd.DataFrame(sorted(attention_dicts, key=len, reverse=True)).merge(check_in_data_nums,how='left', on = ['recordId'])
     #process = psutil.Process(os.getpid())
     #print(process.memory_info().rss)
 
@@ -992,6 +993,9 @@ def main():
             print('Connection lost - retrying!')
         break
 
+    print("\n***** MERGING & FORMATTING CHECK-IN & EP TABLES *****")
+    enhanced_profile_data, check_in_data = merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes)
+
     print("\n***** EXTRACTING BODYMAP DATA FROM JSONS *****")
     full_bmap_df, summary_bmap_df =  extract_bodymap_data(bmap_front_json_df.merge(unique_sexes,how='left', on = ['healthCode']),bmap_back_json_df.merge(unique_sexes,how='left', on = ['healthCode']))
 
@@ -999,10 +1003,9 @@ def main():
     int_results_df = extract_and_format_int_json_data(int_json_df)
 
     print("\n***** EXTRACTING COG DATA FROM JSONS *****")
-    anagram_output, memory_output, number_span_output, color_word_output, trails_output, trails_condensed_output, attention_output = extract_and_format_cog_json_data(cog_json_df)
+    anagram_output, memory_output, number_span_output, color_word_output, trails_output, trails_condensed_output, attention_output = extract_and_format_cog_json_data(cog_json_df,check_in_data)
 
-    print("\n***** MERGING & FORMATTING CHECK-IN & EP TABLES *****")
-    enhanced_profile_data, check_in_data = merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes)
+
 
 
     print("\n***** WRITING OUTPUT CSV FILES *****")
