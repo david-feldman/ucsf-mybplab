@@ -4,7 +4,11 @@ Code in this repository downloads UCSF MyBPLab 2.0 data from Sage's [Synapse](ht
 ## Installing Python and Required Python Packages
 In order to run this code you will first need to download and install [Python 3.X.X](https://www.python.org/downloads/). Any **64 bit** version of Python 3 will work, but on Windows it is important to make sure the box "Add to path" in the window that emerges when you open the .exe file **before** clicking "Install". After installing Python 3, you will need to download this repository, via the green download box at the top of this github page and extract data if zipped. Then you will need to open Command Prompt on Windows (Terminal window on mac), and navigate to the directory (folder) where the code has been downloaded using the ```cd``` command (example of how to navigate directories via Command Prompt [here](https://www.youtube.com/watch?v=MBBWVgE0ewk)). Example:
 
-    cd C:\Users\Amie\Downloads\ucsf-mybplab-master\ucsf-mybplab-master\
+    cd J:\MBPLData\GITHUB_Files\ucsf-mybplab-master\
+  
+If done correctly, the command prompt window should then show this file path as the new default (i.e., after you enter it and click enter, the command prompt window should go to the next line and display the file path you just inputted). If command prompt window is in a different directory (e.g., C:\ or H:\ and clicking enter just returns the original directory and not the directory you entered, then try:
+
+    cd /d J:\MBPLData\GITHUB_Files\ucsf-mybplab-master\
 
 Next, you will need to install required Python packages via running the following command in terminal (Mac):
 
