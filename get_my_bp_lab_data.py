@@ -97,20 +97,20 @@ def generate_list_of_task_types(syn_connection, dataframe_dicts):
 
              if c == 'answers.Intervention_Task_Group':
                  list_of_unique_Intervention_Task_Group.extend(d["dataframe"][c].unique().tolist())
-                 print(d["table_label"],c)
+                 #print(d["table_label"],c)
 
              if c == 'answers.Intervention_Task_Type':
                   list_of_unique_Intervention_Task_Type.extend(d["dataframe"][c].unique().tolist())
-                  print(d["table_label"],c)
+                  #print(d["table_label"],c)
 
     list_of_unique_Cog_Task_Type = [x for x in list_of_unique_Cog_Task_Type if str(x) != 'nan']
     list_of_unique_Cog_Task_Test_Name = [x for x in list_of_unique_Cog_Task_Test_Name if str(x) != 'nan']
     list_of_unique_Intervention_Task_Type = [x for x in list_of_unique_Intervention_Task_Type if str(x) != 'nan']
     list_of_unique_Intervention_Task_Group = [x for x in list_of_unique_Intervention_Task_Group if str(x) != 'nan']
-    print("Cog Task Test Names: ", sorted(set(list_of_unique_Cog_Task_Test_Name)))
-    print("Cog Task Test Types: ",sorted(set(list_of_unique_Cog_Task_Type)))
-    print("Intervention  Task Test Types: ",sorted(set(list_of_unique_Intervention_Task_Type)))
-    print("Intervention Task Test Groups: ",sorted(set(list_of_unique_Intervention_Task_Group)))
+    #print("Cog Task Test Names: ", sorted(set(list_of_unique_Cog_Task_Test_Name)))
+    #print("Cog Task Test Types: ",sorted(set(list_of_unique_Cog_Task_Type)))
+    #print("Intervention  Task Test Types: ",sorted(set(list_of_unique_Intervention_Task_Type)))
+    #print("Intervention Task Test Groups: ",sorted(set(list_of_unique_Intervention_Task_Group)))
 
     #cog_dat = cog_dat.dropna()
     #table = build_table("simple_table", "syn123", cog_dat.head())
@@ -123,9 +123,11 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
     #table lists based upon visually observing where relevant jsons exist in data structure
     cog_table_list = ['MorningV1-v3','NightV3-v2','AfternoonV3-v2','MorningV3-v2','NightV2-v2','AfternoonV2-v2','MorningV2-v2','NightV1-v2','AfternoonV1-v2','Night-v14','Morning-v12','Body and Mind-v14']
     int_table_list = ['AfternoonV1-v2','AfternoonV2-v2','AfternoonV3-v2','Body and Mind-v14','Morning-v12','MorningV1-v3','MorningV2-v2','MorningV3-v2','Night-v14','NightV1-v2','NightV2-v2','NightV3-v2']
+    answers_list = ['AfternoonV1-v2','AfternoonV2-v2','AfternoonV3-v2','MorningV1-v3','MorningV2-v2','MorningV3-v2','NightV1-v2','NightV2-v2','NightV3-v2']
     bodymap_table_list = ['Morning-v12','MorningV1-v3']
     cog_metadata_df = pd.DataFrame()
     int_metadata_df = pd.DataFrame()
+    answers_df = pd.DataFrame()
     bmap_back_metadata_df = pd.DataFrame()
     bmap_front_metadata_df = pd.DataFrame()
 
@@ -139,6 +141,19 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
             temp_df = temp_df.rename({"Cog_Result.json":"file_handle_id"},errors="raise",axis=1)
             temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
             cog_metadata_df = cog_metadata_df.append(temp_df)
+
+        if d["table_label"] in answers_list:
+            #print("downloading answers jsons from: ", d["table_label"])
+            file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['answers'])
+            for file_handle_id, path in file_map.items():
+                file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"Answers"})
+            temp_df = d['dataframe'][['healthCode','recordId','answers']].copy(deep=True).dropna(subset=['healthCode', 'answers'])
+
+            temp_df['table_label'] = d['table_label']
+            temp_df = temp_df.rename({"answers":"file_handle_id"},errors="raise",axis=1)
+            temp_df = temp_df.astype({"file_handle_id":int,"table_label": str})
+            answers_df = answers_df.append(temp_df)
+            
 
         if d["table_label"] in int_table_list:
              file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['Intervention_Result.json'])
@@ -176,10 +191,13 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
     file_handle_and_path_df.to_csv('all_file_handles.csv',index=False)
     cog_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'Cog'].reset_index(drop=True).merge(cog_metadata_df,how='inner',on = ['file_handle_id','table_label'])
     int_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'Intervention'].reset_index(drop=True).merge(int_metadata_df,how='inner',on = ['file_handle_id','table_label'])
+    #print(answers_df.head())
+    #print(file_handle_and_path_df[file_handle_and_path_df['type'] == 'Answers'].head())
+    answers_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'Answers'].reset_index(drop=True).merge(answers_df,how='inner',on = ['file_handle_id','table_label'])
     bmap_back_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BodyMapBack'].reset_index(drop=True).merge(bmap_back_metadata_df,how='inner',on = ['file_handle_id','table_label'])
     bmap_front_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BodyMapFront'].reset_index(drop=True).merge(bmap_front_metadata_df,how='inner',on = ['file_handle_id','table_label'])
 
-    return cog_json_output_data, int_json_output_data, bmap_back_json_output_data, bmap_front_json_output_data
+    return cog_json_output_data, int_json_output_data, bmap_back_json_output_data, bmap_front_json_output_data, answers_json_output_data
 
 def get_sexes(dataframe_dicts):
     df = [i["dataframe"] for i in dataframe_dicts if i["table_label"] == 'Background Survey-v8'][0]
@@ -257,8 +275,24 @@ def createdOn_tz_convert(x):
         return (datetime.fromtimestamp(x.createdOn/1000.0) + timedelta(hours=x.createdOnTimeZone/100)).strftime('%Y-%m-%d %H:%M:%S.%f')
         #return pd.to_datetime(x.createdOn,unit='ms').dt.tz_localize('utc').dt.tz_convert(pytz.timezone(x.createdOnTimeZone))
 
+def parse_answers_data(answers_df):
+    outdicts = []
+    cols = answers_df.columns
+    for idx, row in answers_df.iterrows():
+        with open(row['path']) as f:
+            data = json.load(f)
+        temp_dict = {}
+        for col in cols:
+            temp_dict[col] = row[col]
+        try:
+        	temp_dict["completion_dbp_offset"] = data["completion_dbp_offset"]
+        except:
+        	pass
+        outdicts.append(temp_dict)
+    return pd.DataFrame(outdicts)
 
-def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes):
+
+def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes, check_in_answers_jsons):
     enhanced_profile_data = pd.DataFrame()
     enhanced_profile_data = enhanced_profile_data.reindex(columns = ['healthCode'])
     ep_extra_data = pd.DataFrame()
@@ -299,10 +333,17 @@ def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes):
         #    tab["dataframe"].to_csv('background_survey_v8.csv',index=False)
 
 
+    
     ep_extra_data = ep_extra_data.dropna(subset=['healthCode'])
     enhanced_profile_data  = enhanced_profile_data.append(ep_extra_data)
     check_in_data['checkinNum'] = check_in_data.groupby('healthCode')['createdOn'].rank(method='first')
-    check_in_data['createdOn'] = check_in_data.apply(createdOn_tz_convert,axis=1)
+    check_in_data['createdOn_local'] = check_in_data.apply(createdOn_tz_convert,axis=1)
+
+    #merge in data from answers json
+    check_in_answers_jsons = check_in_answers_jsons[["recordId","completion_dbp_offset"]]
+    check_in_data = check_in_data.merge(check_in_answers_jsons,how='left', on = ['recordId'])
+
+
 
     return enhanced_profile_data, check_in_data
 
@@ -987,14 +1028,17 @@ def main():
 
             #create_tables_and_columns_csv(mybplab_table_dataframes)
             print("\n***** DOWNLOADING JSON DATA FROM SYNAPSE *****")
-            cog_json_df, int_json_df, bmap_front_json_df, bmap_back_json_df  = download_jsons_and_assemble_metadata(syn,mybplab_table_dataframes)
+            cog_json_df, int_json_df, bmap_front_json_df, bmap_back_json_df, answers_json_df  = download_jsons_and_assemble_metadata(syn,mybplab_table_dataframes)
             unique_sexes = get_sexes(mybplab_table_dataframes)
         except synapseclient.core.exceptions.SynapseTimeoutError:
             print('Connection lost - retrying!')
         break
 
+    print("\n***** PARSING RAW CHECK-IN ANSWERS JSONS *****")
+    answers_df = parse_answers_data(answers_json_df)
+
     print("\n***** MERGING & FORMATTING CHECK-IN & EP TABLES *****")
-    enhanced_profile_data, check_in_data = merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes)
+    enhanced_profile_data, check_in_data = merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes, answers_df)
 
     print("\n***** EXTRACTING BODYMAP DATA FROM JSONS *****")
     full_bmap_df, summary_bmap_df =  extract_bodymap_data(bmap_front_json_df.merge(unique_sexes,how='left', on = ['healthCode']),bmap_back_json_df.merge(unique_sexes,how='left', on = ['healthCode']))
@@ -1051,11 +1095,11 @@ def main():
     check_in_data.to_csv('data_results/check_in_background_and_ep_data/check_in_merged_results.csv',index=False)
     for tab in mybplab_table_dataframes:
         if "Enhance Profile" in tab["table_label"]:
-            tab["dataframe"]['createdOn'] = tab["dataframe"].apply(createdOn_tz_convert,axis=1)
+            tab["dataframe"]['createdOn_local'] = tab["dataframe"].apply(createdOn_tz_convert,axis=1)
             tab["dataframe"].to_csv("data_results/check_in_background_and_ep_data/standalone_ep_tables/"+tab["table_label"]+".csv", index=False)
         elif "Background Survey-v8" == tab["table_label"]:
             tab["dataframe"] = tab["dataframe"].fillna({'createdOnTimeZone':0})
-            tab["dataframe"]['createdOn'] = tab["dataframe"].apply(createdOn_tz_convert,axis=1)
+            tab["dataframe"]['createdOn_local'] = tab["dataframe"].apply(createdOn_tz_convert,axis=1)
             tab["dataframe"].to_csv("data_results/check_in_background_and_ep_data/"+tab["table_label"]+".csv", index=False)
 
     print("\n***** FINSHED WRITING OUTPUT CSV FILES *****")
