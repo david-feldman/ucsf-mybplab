@@ -147,7 +147,7 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
             bp_metadata_df = bp_metadata_df.append(temp_df)
 
     file_handle_and_path_df = pd.DataFrame(file_handle_dicts)
-    bp_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BP'].reset_index(drop=True).merge(bmap_back_metadata_df,how='inner',on = ['file_handle_id','table_label'])                                                                                                                                                                                            
+    bp_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BP'].reset_index(drop=True).merge(bp_metadata_df,how='inner',on = ['file_handle_id','table_label'])                                                                                                                                                                                            
 
     #     if d["table_label"] in cog_table_list:
     #         file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['Cog_Result.json'])
