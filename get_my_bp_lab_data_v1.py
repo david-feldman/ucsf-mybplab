@@ -133,11 +133,15 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
     # bmap_front_metadata_df = pd.DataFrame()
 
     for d in dataframe_dicts:
+        print(d)
         if set(['blood_pressure_stress_recorder_bloodPressure.json']).issubset(d["dataframe"].columns):
+            print("json column found!") 
             file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['blood_pressure_stress_recorder_bloodPressure.json'])
+            print("completed file map!")
             for file_handle_id, path in file_map.items():
                  file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
             temp_df = d['dataframe'][['healthCode','recordId','blood_pressure_stress_recorder_bloodPressure.json']].copy(deep=True).dropna(subset=['healthCode', 'blood_pressure_stress_recorder_bloodPressure.json'])
+            temp_df['table_label'] = d['table_label']
             temp_df = temp_df.rename({"blood_pressure_stress_recorder_bloodPressure.json":"file_handle_id"},errors="raise",axis=1)
             temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
             bp_metadata_df = bp_metadata_df.append(temp_df)
