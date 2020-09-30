@@ -274,6 +274,8 @@ def extract_bodymap_data(bmap_front_df, bmap_back_df):
 def createdOn_tz_convert(x):
         return (datetime.fromtimestamp(x.createdOn/1000.0) + timedelta(hours=x.createdOnTimeZone/100)).strftime('%Y-%m-%d %H:%M:%S.%f')
         #return pd.to_datetime(x.createdOn,unit='ms').dt.tz_localize('utc').dt.tz_convert(pytz.timezone(x.createdOnTimeZone))
+def createdOn_convert(x):
+        return (datetime.fromtimestamp(x.createdOn/1000.0)).strftime('%Y-%m-%d %H:%M:%S.%f')
 
 def parse_answers_data(answers_df):
     outdicts = []
@@ -285,9 +287,14 @@ def parse_answers_data(answers_df):
         for col in cols:
             temp_dict[col] = row[col]
         try:
-        	temp_dict["completion_dbp_offset"] = data["completion_dbp_offset"]
+          temp_dict["completion_dbp_offset"] = data["completion_dbp_offset"]
         except:
-        	pass
+          pass
+        try: 
+          temp_dict["completion_sbp_offset"] = data["completion_sbp_offset"]
+        except:
+          pass
+
         outdicts.append(temp_dict)
     return pd.DataFrame(outdicts)
 
@@ -338,9 +345,11 @@ def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes, ch
     enhanced_profile_data  = enhanced_profile_data.append(ep_extra_data)
     check_in_data['checkinNum'] = check_in_data.groupby('healthCode')['createdOn'].rank(method='first')
     check_in_data['createdOn_local'] = check_in_data.apply(createdOn_tz_convert,axis=1)
+    check_in_data['createdOn'] = check_in_data.apply(createdOn_convert,axis=1)
+
 
     #merge in data from answers json
-    check_in_answers_jsons = check_in_answers_jsons[["recordId","completion_dbp_offset"]]
+    check_in_answers_jsons = check_in_answers_jsons[["recordId","completion_dbp_offset", "completion_sbp_offset"]]
     check_in_data = check_in_data.merge(check_in_answers_jsons,how='left', on = ['recordId'])
 
 
@@ -1096,10 +1105,12 @@ def main():
     for tab in mybplab_table_dataframes:
         if "Enhance Profile" in tab["table_label"]:
             tab["dataframe"]['createdOn_local'] = tab["dataframe"].apply(createdOn_tz_convert,axis=1)
+            tab["dataframe"]['createdOn'] = tab["dataframe"].apply(createdOn_convert,axis=1)
             tab["dataframe"].to_csv("data_results/check_in_background_and_ep_data/standalone_ep_tables/"+tab["table_label"]+".csv", index=False)
         elif "Background Survey-v8" == tab["table_label"]:
             tab["dataframe"] = tab["dataframe"].fillna({'createdOnTimeZone':0})
             tab["dataframe"]['createdOn_local'] = tab["dataframe"].apply(createdOn_tz_convert,axis=1)
+            tab["dataframe"]['createdOn'] = tab["dataframe"].apply(createdOn_convert,axis=1)
             tab["dataframe"].to_csv("data_results/check_in_background_and_ep_data/"+tab["table_label"]+".csv", index=False)
 
     print("\n***** FINSHED WRITING OUTPUT CSV FILES *****")
