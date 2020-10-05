@@ -62,7 +62,7 @@ def get_relevant_tables_and_record_list(syn_connection, table_dicts):
       health_data, table = get_data_from_synapse_table(syn_connection,ht[0])
       #based upon offline list delivered by Sage
       #mybp_lab1_versions = ['version 1.0.3, build 72',  'version 1.0.5, build 75', 'version 1.0.6, build 76',  'version 1.1.0, build 82',  'version 1.1.4, build 86', 'version 1.1.5, build 88']
-      mybp_lab2_versions = ['version 2.0.0, build 116','version 2.0.3, build 120','version 2.0.5, build 122','version 2.0.6, build 124','version 2.0.7, build 125','version 2.0.8, build 126','version 2.1.0,    build 128','version 2.1.2, build 130','version 2.1.3, build 131','version 2.1.6, build 138','version 2.1.9, build 141','version 2.2.0, build 142','version 2.2.1, build 143','version 2.2.2, build 144']      
+      mybp_lab2_versions = ['version 2.0.0, build 116','version 2.0.3, build 120','version 2.0.5, build 122','version 2.0.6, build 124','version 2.0.7, build 125','version 2.0.8, build 126','version 2.1.0, build 128','version 2.1.2, build 130','version 2.1.3, build 131','version 2.1.6, build 138','version 2.1.9, build 141','version 2.2.0, build 142','version 2.2.1, build 143','version 2.2.2, build 144']      
       health_data_filtered = health_data[health_data["appVersion"].isin(mybp_lab2_versions)]
       relevant_table_list = health_data_filtered['originalTable'].unique().tolist()
       #tables excluded based upon offline requirements
@@ -123,7 +123,7 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
     file_handle_dicts = []
     bp_metadata_df = pd.DataFrame()
     #table lists based upon visually observing where relevant jsons exist in data structure
-    # cog_table_list = ['MorningV1-v3','NightV3-v2','AfternoonV3-v2','MorningV3-v2','NightV2-v2','AfternoonV2-v2','MorningV2-v2','NightV1-v2','AfternoonV1-v2','Night-v14','Morning-v12','Body and Mind-v14']
+    cog_table_list = ['MorningV1-v3','NightV3-v2','AfternoonV3-v2','MorningV3-v2','NightV2-v2','AfternoonV2-v2','MorningV2-v2','NightV1-v2','AfternoonV1-v2','Night-v14','Morning-v12','Body and Mind-v14']
     # int_table_list = ['AfternoonV1-v2','AfternoonV2-v2','AfternoonV3-v2','Body and Mind-v14','Morning-v12','MorningV1-v3','MorningV2-v2','MorningV3-v2','Night-v14','NightV1-v2','NightV2-v2','NightV3-v2']
     # answers_list = ['AfternoonV1-v2','AfternoonV2-v2','AfternoonV3-v2','MorningV1-v3','MorningV2-v2','MorningV3-v2','NightV1-v2','NightV2-v2','NightV3-v2']
     # bodymap_table_list = ['Morning-v12','MorningV1-v3']
@@ -135,9 +135,21 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
 
     for d in dataframe_dicts:
         print(d)
-        if set(['blood_pressure_stress_recorder_bloodPressure.json']).issubset(d["dataframe"].columns):
-            print("json column found!") 
-            file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['blood_pressure_stress_recorder_bloodPressure.json'])
+        if d["table_label"] in cog_table_list and (set(['BP_phone_rawdata.json']).issubset(d["dataframe"].columns) and set(['BP_watch_rawdata.json']).issubset(d["dataframe"].columns)):
+            print("json columns found!") 
+            #Phone
+            file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['BP_phone_rawdata.json'])
+            print("completed file map!")
+            for file_handle_id, path in file_map.items():
+                 file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
+            temp_df = d['dataframe'][['healthCode','recordId','blood_pressure_stress_recorder_bloodPressure.json']].copy(deep=True).dropna(subset=['healthCode', 'blood_pressure_stress_recorder_bloodPressure.json'])
+            temp_df['table_label'] = d['table_label']
+            temp_df = temp_df.rename({"blood_pressure_stress_recorder_bloodPressure.json":"file_handle_id"},errors="raise",axis=1)
+            temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
+            bp_metadata_df = bp_metadata_df.append(temp_df)
+            
+            #watch
+            file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['BP_watch_rawdata.json'])
             print("completed file map!")
             for file_handle_id, path in file_map.items():
                  file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
