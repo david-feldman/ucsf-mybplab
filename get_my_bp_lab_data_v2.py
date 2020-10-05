@@ -135,29 +135,55 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
 
     for d in dataframe_dicts:
         print(d)
-        if d["table_label"] in cog_table_list and (set(['BP_phone_rawdata.json']).issubset(d["dataframe"].columns) and set(['BP_watch_rawdata.json']).issubset(d["dataframe"].columns)):
+        if d["table_label"] in cog_table_list and (set(['BP_phone_rawdata.json']).issubset(d["dataframe"].columns) or set(['BP_watch_rawdata.json']).issubset(d["dataframe"].columns) or  set(['blood_pressure_stress_recorder_bloodPressure.json']).issubset(d["dataframe"].columns) or  set(['-']).issubset(d["dataframe"].columns)):
             print("json columns found!") 
             #Phone
-            file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['BP_phone_rawdata.json'])
-            print("completed file map!")
-            for file_handle_id, path in file_map.items():
-                 file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
-            temp_df = d['dataframe'][['healthCode','recordId','BP_phone_rawdata.json']].copy(deep=True).dropna(subset=['healthCode', 'BP_phone_rawdata.json'])
-            temp_df['table_label'] = d['table_label']
-            temp_df = temp_df.rename({"BP_phone_rawdata.json":"file_handle_id"},errors="raise",axis=1)
-            temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
-            bp_metadata_df = bp_metadata_df.append(temp_df)
+            if set(['BP_phone_rawdata.json']).issubset(d["dataframe"].columns):
+                file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['BP_phone_rawdata.json'])
+                print("completed file map!")
+                for file_handle_id, path in file_map.items():
+                     file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
+                temp_df = d['dataframe'][['healthCode','recordId','BP_phone_rawdata.json']].copy(deep=True).dropna(subset=['healthCode', 'BP_phone_rawdata.json'])
+                temp_df['table_label'] = d['table_label']
+                temp_df = temp_df.rename({"BP_phone_rawdata.json":"file_handle_id"},errors="raise",axis=1)
+                temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
+                bp_metadata_df = bp_metadata_df.append(temp_df)
             
             #watch
-            file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['BP_watch_rawdata.json'])
-            print("completed file map!")
-            for file_handle_id, path in file_map.items():
-                 file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
-            temp_df = d['dataframe'][['healthCode','recordId','BP_watch_rawdata.json']].copy(deep=True).dropna(subset=['healthCode', 'BP_watch_rawdata.json'])
-            temp_df['table_label'] = d['table_label']
-            temp_df = temp_df.rename({"BP_watch_rawdata.json":"file_handle_id"},errors="raise",axis=1)
-            temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
-            bp_metadata_df = bp_metadata_df.append(temp_df)
+            if set(['BP_watch_rawdata.json']).issubset(d["dataframe"].columns):
+                file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['BP_watch_rawdata.json'])
+                print("completed file map!")
+                for file_handle_id, path in file_map.items():
+                     file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
+                temp_df = d['dataframe'][['healthCode','recordId','BP_watch_rawdata.json']].copy(deep=True).dropna(subset=['healthCode', 'BP_watch_rawdata.json'])
+                temp_df['table_label'] = d['table_label']
+                temp_df = temp_df.rename({"BP_watch_rawdata.json":"file_handle_id"},errors="raise",axis=1)
+                temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
+                bp_metadata_df = bp_metadata_df.append(temp_df)
+
+            #Phone
+            if set(['blood_pressure_stress_recorder_bloodPressure.json']).issubset(d["dataframe"].columns):
+                file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['blood_pressure_stress_recorder_bloodPressure.json'])
+                print("completed file map!")
+                for file_handle_id, path in file_map.items():
+                     file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
+                temp_df = d['dataframe'][['healthCode','recordId','blood_pressure_stress_recorder_bloodPressure.json']].copy(deep=True).dropna(subset=['healthCode', 'blood_pressure_stress_recorder_bloodPressure.json'])
+                temp_df['table_label'] = d['table_label']
+                temp_df = temp_df.rename({"blood_pressure_stress_recorder_bloodPressure.json":"file_handle_id"},errors="raise",axis=1)
+                temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
+                bp_metadata_df = bp_metadata_df.append(temp_df)
+            
+            #watch
+            if set(['blood_pressure_watch_recorder.json']).issubset(d["dataframe"].columns):
+                file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['blood_pressure_watch_recorder.json'])
+                print("completed file map!")
+                for file_handle_id, path in file_map.items():
+                     file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
+                temp_df = d['dataframe'][['healthCode','recordId','blood_pressure_watch_recorder.json']].copy(deep=True).dropna(subset=['healthCode', 'blood_pressure_watch_recorder.json'])
+                temp_df['table_label'] = d['table_label']
+                temp_df = temp_df.rename({"blood_pressure_watch_recorder.json":"file_handle_id"},errors="raise",axis=1)
+                temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
+                bp_metadata_df = bp_metadata_df.append(temp_df)
 
     file_handle_and_path_df = pd.DataFrame(file_handle_dicts)
     bp_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BP'].reset_index(drop=True).merge(bp_metadata_df,how='inner',on = ['file_handle_id','table_label'])
