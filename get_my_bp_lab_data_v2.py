@@ -61,8 +61,9 @@ def get_relevant_tables_and_record_list(syn_connection, table_dicts):
       ht = [d for d in table_dicts  if d['table_label'] == 'Health Data Summary Table']
       health_data, table = get_data_from_synapse_table(syn_connection,ht[0])
       #based upon offline list delivered by Sage
-      mybp_lab1_versions = ['version 1.0.3, build 72',  'version 1.0.5, build 75', 'version 1.0.6, build 76',  'version 1.1.0, build 82',  'version 1.1.4, build 86', 'version 1.1.5, build 88']
-      health_data_filtered = health_data[health_data["appVersion"].isin(mybp_lab1_versions)]
+      #mybp_lab1_versions = ['version 1.0.3, build 72',  'version 1.0.5, build 75', 'version 1.0.6, build 76',  'version 1.1.0, build 82',  'version 1.1.4, build 86', 'version 1.1.5, build 88']
+      mybp_lab2_versions = ['version 2.0.0, build 116','version 2.0.3, build 120','version 2.0.5, build 122','version 2.0.6, build 124','version 2.0.7, build 125','version 2.0.8, build 126','version 2.1.0,    build 128','version 2.1.2, build 130','version 2.1.3, build 131','version 2.1.6, build 138','version 2.1.9, build 141','version 2.2.0, build 142','version 2.2.1, build 143','version 2.2.2, build 144']      
+      health_data_filtered = health_data[health_data["appVersion"].isin(mybp_lab2_versions)]
       relevant_table_list = health_data_filtered['originalTable'].unique().tolist()
       #tables excluded based upon offline requirements
       exclude_tables = []
