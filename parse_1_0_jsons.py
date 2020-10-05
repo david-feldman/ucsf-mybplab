@@ -28,7 +28,10 @@ def get_relevant_stats_from_raw_bp_file(dct, outlist):
         except:
             return
     #print(data)
-    rri_values = [int(d['rri']) for d in data]
+    try:
+        rri_values = [int(d['rri']) for d in data]
+    except:
+        return
     #print(rri_values)
     with open(os.devnull, 'w') as devnull:
         with contextlib.redirect_stdout(devnull):
@@ -44,7 +47,7 @@ def get_relevant_stats_from_raw_bp_file(dct, outlist):
         feature_subset = {}
     outlist.append({**dct,**feature_subset})
 
-file_df = pd.read_csv("1_0_raw_bloodpressure_jsons.csv")
+file_df = pd.read_csv("2_0_raw_bloodpressure_jsons.csv")
 file_dicts = file_df.to_dict('records')
 pool = multiprocessing.Pool(8)
 manager = multiprocessing.Manager()
@@ -53,7 +56,7 @@ pool.starmap(get_relevant_stats_from_raw_bp_file, zip(file_dicts, repeat(outlist
 pool.close()
 pool.join()
 df_out = pd.DataFrame(list(outlist))
-df_out.to_csv("processed_bp_data.csv",index=False)
+df_out.to_csv("processed_bp_data_2.csv",index=False)
 #outdicts = []
 
 #for file in file_list:

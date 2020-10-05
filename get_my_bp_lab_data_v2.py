@@ -142,9 +142,9 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
             print("completed file map!")
             for file_handle_id, path in file_map.items():
                  file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
-            temp_df = d['dataframe'][['healthCode','recordId','blood_pressure_stress_recorder_bloodPressure.json']].copy(deep=True).dropna(subset=['healthCode', 'blood_pressure_stress_recorder_bloodPressure.json'])
+            temp_df = d['dataframe'][['healthCode','recordId','BP_phone_rawdata.json']].copy(deep=True).dropna(subset=['healthCode', 'BP_phone_rawdata.json'])
             temp_df['table_label'] = d['table_label']
-            temp_df = temp_df.rename({"blood_pressure_stress_recorder_bloodPressure.json":"file_handle_id"},errors="raise",axis=1)
+            temp_df = temp_df.rename({"BP_phone_rawdata.json":"file_handle_id"},errors="raise",axis=1)
             temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
             bp_metadata_df = bp_metadata_df.append(temp_df)
             
@@ -153,9 +153,9 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
             print("completed file map!")
             for file_handle_id, path in file_map.items():
                  file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BP"})
-            temp_df = d['dataframe'][['healthCode','recordId','blood_pressure_stress_recorder_bloodPressure.json']].copy(deep=True).dropna(subset=['healthCode', 'blood_pressure_stress_recorder_bloodPressure.json'])
+            temp_df = d['dataframe'][['healthCode','recordId','BP_watch_rawdata.json']].copy(deep=True).dropna(subset=['healthCode', 'BP_watch_rawdata.json'])
             temp_df['table_label'] = d['table_label']
-            temp_df = temp_df.rename({"blood_pressure_stress_recorder_bloodPressure.json":"file_handle_id"},errors="raise",axis=1)
+            temp_df = temp_df.rename({"BP_watch_rawdata.json":"file_handle_id"},errors="raise",axis=1)
             temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
             bp_metadata_df = bp_metadata_df.append(temp_df)
 
@@ -302,7 +302,7 @@ def main():
             print('Connection lost - retrying!')
         break
 
-    bp_json_df.to_csv("1_0_raw_bloodpressure_jsons.csv", index=False)
+    bp_json_df.to_csv("2_0_raw_bloodpressure_jsons.csv", index=False)
 
 main()
 
