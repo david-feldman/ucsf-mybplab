@@ -279,7 +279,7 @@ def parse_answers_data(answers_df):
     outdicts = []
     cols = answers_df.columns
     for idx, row in answers_df.iterrows():
-        with open(row['path']) as f:
+        with open(row['path'],encoding="utf8") as f:
             data = json.load(f)
         temp_dict = {}
         for col in cols:
