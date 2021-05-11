@@ -40,14 +40,17 @@ def get_relevant_stats_from_raw_bp_file(dct, outlist):
     rri_no_outliers = [x for x in rri_no_outliers if str(x) != 'nan']
     #print(rri_no_outliers)
     if len(rri_no_outliers) > 0:
-        features = get_time_domain_features(rri_no_outliers)
-        feature_subset_list = ["rmssd","sdnn","mean_hr","min_hr","max_hr","std_hr"]
-        feature_subset = dict((k, features[k]) for k in feature_subset_list if k in features)
+        try:
+            features = get_time_domain_features(rri_no_outliers)
+            feature_subset_list = ["rmssd","sdnn","mean_hr","min_hr","max_hr","std_hr"]
+            feature_subset = dict((k, features[k]) for k in feature_subset_list if k in features)
+        except:
+            feature_subset = {}
     else:
         feature_subset = {}
     outlist.append({**dct,**feature_subset})
 
-file_df = pd.read_csv("2_0_raw_bloodpressure_jsons.csv")
+file_df = pd.read_csv("1_0_raw_bloodpressure_jsons.csv")
 file_dicts = file_df.to_dict('records')
 pool = multiprocessing.Pool(8)
 manager = multiprocessing.Manager()
@@ -56,7 +59,7 @@ pool.starmap(get_relevant_stats_from_raw_bp_file, zip(file_dicts, repeat(outlist
 pool.close()
 pool.join()
 df_out = pd.DataFrame(list(outlist))
-df_out.to_csv("processed_bp_data_2.csv",index=False)
+df_out.to_csv("processed_bp_data_1.csv",index=False)
 #outdicts = []
 
 #for file in file_list:
