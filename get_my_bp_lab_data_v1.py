@@ -284,12 +284,23 @@ def main():
             print("\n***** DOWNLOADING DATA FROM SYNAPSE TABLES *****")
             mybplab_table_dataframes = get_data_from_many_tables(syn,relevant_table_dicts, record_list)
             print("\n***** DOWNLOADING JSON DATA FROM SYNAPSE *****")
-            bp_json_df = download_jsons_and_assemble_metadata(syn,mybplab_table_dataframes)
+            #bp_json_df = download_jsons_and_assemble_metadata(syn,mybplab_table_dataframes)
         except synapseclient.core.exceptions.SynapseTimeoutError:
             print('Connection lost - retrying!')
         break
 
-    bp_json_df.to_csv("1_0_raw_bloodpressure_jsons.csv", index=False)
+    table_list = ('Body and Mind-v6', 'Body and Mind-v7', 'Morning-v4', 'Morning-v5', 'Night-v8', 'Night-v9')
+    df_out = pd.DataFrame()
+    for tab in mybplab_table_dataframes:
+        if tab["table_label"] in table_list:
+            tab["dataframe"]["table_label"] = tab["table_label"]
+            df_out = df_out.append(tab["dataframe"])
+            #print(tab["table_label"])
+            #print(tab["dataframe"].columns)
+    #bp_json_df.to_csv("1_0_raw_bloodpressure_jsons.csv", index=False)
+    df_out  = df_out.fillna({'createdOnTimeZone':0})
+    df_out['createdOn_local'] = df_out.apply(createdOn_tz_convert,axis=1)
+    df_out.to_csv("1_0_check_in_data.csv",index=False)
 
 main()
 
