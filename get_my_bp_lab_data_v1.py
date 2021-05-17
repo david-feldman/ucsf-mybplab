@@ -120,20 +120,12 @@ def generate_list_of_task_types(syn_connection, dataframe_dicts):
 
 def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
     file_handle_dicts = []
+    bodymap_table_list = ['Morning-v4','Morning-v5']
     bp_metadata_df = pd.DataFrame()
-    #table lists based upon visually observing where relevant jsons exist in data structure
-    # cog_table_list = ['MorningV1-v3','NightV3-v2','AfternoonV3-v2','MorningV3-v2','NightV2-v2','AfternoonV2-v2','MorningV2-v2','NightV1-v2','AfternoonV1-v2','Night-v14','Morning-v12','Body and Mind-v14']
-    # int_table_list = ['AfternoonV1-v2','AfternoonV2-v2','AfternoonV3-v2','Body and Mind-v14','Morning-v12','MorningV1-v3','MorningV2-v2','MorningV3-v2','Night-v14','NightV1-v2','NightV2-v2','NightV3-v2']
-    # answers_list = ['AfternoonV1-v2','AfternoonV2-v2','AfternoonV3-v2','MorningV1-v3','MorningV2-v2','MorningV3-v2','NightV1-v2','NightV2-v2','NightV3-v2']
-    # bodymap_table_list = ['Morning-v12','MorningV1-v3']
-    # cog_metadata_df = pd.DataFrame()
-    # int_metadata_df = pd.DataFrame()
-    # answers_df = pd.DataFrame()
-    # bmap_back_metadata_df = pd.DataFrame()
-    # bmap_front_metadata_df = pd.DataFrame()
+    bmap_back_metadata_df = pd.DataFrame()
+    bmap_front_metadata_df = pd.DataFrame()
 
     for d in dataframe_dicts:
-        print(d)
         if set(['blood_pressure_stress_recorder_bloodPressure.json']).issubset(d["dataframe"].columns):
             print("json column found!") 
             file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['blood_pressure_stress_recorder_bloodPressure.json'])
@@ -146,74 +138,93 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
             temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
             bp_metadata_df = bp_metadata_df.append(temp_df)
 
+        if d["table_label"] in bodymap_table_list:
+             file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['bodyMapBack_bodyMapBack.json'])
+             for file_handle_id, path in file_map.items():
+                 file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BodyMapBack"})
+             temp_df = d['dataframe'][['healthCode','recordId','bodyMapBack_bodyMapBack.json']].copy(deep=True).dropna()
+             temp_df['table_label'] = d['table_label']
+             temp_df = temp_df.rename({"bodyMapBack_bodyMapBack.json":"file_handle_id"},errors="raise",axis=1)
+             temp_df = temp_df.astype({"file_handle_id":int,"table_label": str})
+             bmap_back_metadata_df = bmap_back_metadata_df.append(temp_df)
+
+             file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['bodyMapFront_bodyMapFront.json'])
+             for file_handle_id, path in file_map.items():
+                 file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BodyMapFront"})
+             temp_df = d['dataframe'][['healthCode','recordId','bodyMapFront_bodyMapFront.json']].copy(deep=True).dropna()
+             temp_df['table_label'] = d['table_label']
+             temp_df = temp_df.rename({"bodyMapFront_bodyMapFront.json":"file_handle_id"},errors="raise",axis=1)
+             temp_df = temp_df.astype({"file_handle_id":int,"table_label": str})
+             bmap_front_metadata_df = bmap_front_metadata_df.append(temp_df)
+
     file_handle_and_path_df = pd.DataFrame(file_handle_dicts)
     bp_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BP'].reset_index(drop=True).merge(bp_metadata_df,how='inner',on = ['file_handle_id','table_label'])
-    return bp_output_data
+    return bp_output_data, bmap_back_metadata_df, bmap_front_metadata_df
 
-    #     if d["table_label"] in cog_table_list:
-    #         file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['Cog_Result.json'])
-    #         for file_handle_id, path in file_map.items():
-    #             file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"Cog"})
-    #         temp_df = d['dataframe'][['healthCode','recordId','answers.Cog_Task_Test_Name','answers.Cog_Task_Type','Cog_Result.json','answers.Cog_Test_Hits','answers.Cog_Test_Misses','answers.Cog_Test_Skips','answers.Cog_Skipped']].copy(deep=True).dropna(subset=['healthCode', 'Cog_Result.json'])
-    #         temp_df['table_label'] = d['table_label']
-    #         temp_df = temp_df.rename({"Cog_Result.json":"file_handle_id"},errors="raise",axis=1)
-    #         temp_df = temp_df.astype({"file_handle_id": int,"table_label": str})
-    #         cog_metadata_df = cog_metadata_df.append(temp_df)
+def extract_bodymap_data(bmap_front_df, bmap_back_df):
+    # image sample dimensions
+    MALE_FRONT_RATIO = 692/ 1672
+    FEMALE_FRONT_RATIO = 576/ 1672
+    MALE_BACK_RATIO = 716/ 1672
+    FEMALE_BACK_RATIO = 612/ 1672
 
-    #     if d["table_label"] in answers_list:
-    #         print("downloading answers jsons from: ", d["table_label"])
-    #         file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['answers'])
-    #         for file_handle_id, path in file_map.items():
-    #             file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"Answers"})
-    #         temp_df = d['dataframe'][['healthCode','recordId','answers']].copy(deep=True).dropna(subset=['healthCode', 'answers'])
-    #         temp_df['table_label'] = d['table_label']
-    #         temp_df = temp_df.rename({"answers":"file_handle_id"},errors="raise",axis=1)
-    #         temp_df = temp_df.astype({"file_handle_id":int,"table_label": str})
-    #         answers_df.append(temp_df)
-            
+    output_full_dicts = []
+    output_summary_dicts = []
 
-    #     if d["table_label"] in int_table_list:
-    #          file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['Intervention_Result.json'])
-    #          for file_handle_id, path in file_map.items():
-    #              file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"Intervention"})
-    #          temp_df = d['dataframe'][['healthCode','recordId','answers.Intervention_Task_Group','answers.Intervention_Task_Type','Intervention_Result.json']].copy(deep=True).dropna(subset=['healthCode', 'Intervention_Result.json'])
-    #          temp_df['table_label'] = d['table_label']
-    #          temp_df = temp_df.rename({"Intervention_Result.json":"file_handle_id"},errors="raise",axis=1)
-    #          temp_df = temp_df.astype({"file_handle_id":int,"table_label": str})
-    #          #print('table_label:',d["table_label"],'raw_shape:',d['dataframe'].dropna(subset=['Intervention_Result.json']).shape,'temp_shape:',temp_df.shape)
-    #          int_metadata_df = int_metadata_df.append(temp_df)
-    #          #print('int_metadata_df_shape',int_metadata_df.shape)
+    for x in [{'df':bmap_back_df,'male':MALE_BACK_RATIO,'female':FEMALE_BACK_RATIO},{'df':bmap_front_df,'male':MALE_FRONT_RATIO,'female':FEMALE_FRONT_RATIO}]:
+        curr_df = x['df']
+        for idx, row in curr_df.iterrows():
+            summary = {}
+            full = {}
+            summary.update({"healthCode":row["healthCode"],"recordId":row["recordId"],'answers.sex':row['answers.sex'],'table_label':row['table_label'],'type':row['type']})
+            full.update({"healthCode":row["healthCode"],"recordId":row["recordId"],'answers.sex':row['answers.sex'],'table_label':row['table_label'],'type':row['type']})
+            with open(row['path'],encoding="utf8") as f:
+                 data = json.load(f)
+            ctr = 0
+            first_click = None
+            head_clicks = 0
+            torso_clicks = 0
+            leg_clicks = 0
 
-    #     if d["table_label"] in bodymap_table_list:
-    #          file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['bodyMapBack_bodyMapBack.json'])
-    #          for file_handle_id, path in file_map.items():
-    #              file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BodyMapBack"})
-    #          temp_df = d['dataframe'][['healthCode','recordId','bodyMapBack_bodyMapBack.json']].copy(deep=True).dropna()
-    #          temp_df['table_label'] = d['table_label']
-    #          temp_df = temp_df.rename({"bodyMapBack_bodyMapBack.json":"file_handle_id"},errors="raise",axis=1)
-    #          temp_df = temp_df.astype({"file_handle_id":int,"table_label": str})
-    #          bmap_back_metadata_df = bmap_back_metadata_df.append(temp_df)
+            for r in data:
 
-    #          file_map = syn_connection.downloadTableColumns(d["synapse_table"], ['bodyMapFront_bodyMapFront.json'])
-    #          for file_handle_id, path in file_map.items():
-    #              file_handle_dicts.append({"table_label":d["table_label"],"file_handle_id":int(file_handle_id),"path":path,"type":"BodyMapFront"})
-    #          temp_df = d['dataframe'][['healthCode','recordId','bodyMapFront_bodyMapFront.json']].copy(deep=True).dropna()
-    #          temp_df['table_label'] = d['table_label']
-    #          temp_df = temp_df.rename({"bodyMapFront_bodyMapFront.json":"file_handle_id"},errors="raise",axis=1)
-    #          temp_df = temp_df.astype({"file_handle_id":int,"table_label": str})
-    #          bmap_front_metadata_df = bmap_front_metadata_df.append(temp_df)
 
-    
-    # #int_metadata_df.to_csv('int_metadata_output.csv',index=False)
-    # file_handle_and_path_df.to_csv('all_file_handles.csv',index=False)
-    # cog_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'Cog'].reset_index(drop=True).merge(cog_metadata_df,how='inner',on = ['file_handle_id','table_label'])
-    # int_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'Intervention'].reset_index(drop=True).merge(int_metadata_df,how='inner',on = ['file_handle_id','table_label'])
-    # answers_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'Answers'].reset_index(drop=True).merge(answers_metadata_df,how='inner',on = ['file_handle_id','table_label'])
-    # bmap_back_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BodyMapBack'].reset_index(drop=True).merge(bmap_back_metadata_df,how='inner',on = ['file_handle_id','table_label'])
-    # bmap_front_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BodyMapFront'].reset_index(drop=True).merge(bmap_front_metadata_df,how='inner',on = ['file_handle_id','table_label'])
+                if row['answers.sex']=='Male':
+                    true_height = int(r['imageWidth'])/x['male']
+                    vertical_padding = (r['imageHeight']-int(r['imageWidth'])/x['male'])/2
+                else:
+                    true_height = int(r['imageWidth'])/x['female']
+                    vertical_padding = (r['imageHeight']-int(r['imageWidth'])/x['female'])/2
 
-    # return cog_json_output_data, int_json_output_data, bmap_back_json_output_data, bmap_front_json_output_data, answers_json_output_data
+                if int(r['y']) < vertical_padding or int(r['y']) > (int(r['imageHeight']) - vertical_padding):
+                    click_type = 'off_screen'
+                elif (int(r['y']) - vertical_padding) <= true_height/6.5:
+                    click_type = 'head'
+                    head_clicks = head_clicks + 1
+                elif (int(r['y']) - vertical_padding) <= true_height/2.4:
+                    click_type = 'torso'
+                    torso_clicks = torso_clicks + 1
+                else:
+                    click_type = 'legs'
+                    leg_clicks = leg_clicks + 1
 
+                if ctr == 0:
+                    first_click = click_type
+                    full.update({'imageHeight':r['imageHeight'],'imageWidth':r['imageWidth']})
+
+                full.update({str(ctr).zfill(3) + '_x':r['x'],str(ctr).zfill(3) + '_y':r['y']})
+
+                #print (r, vertical_padding, click_type)
+                ctr = ctr + 1
+
+            summary.update({'bmap_first_click':first_click,'bmap_head_clicks':head_clicks,'bmap_torso_clicks':torso_clicks,'bmap_leg_clicks':leg_clicks})
+            output_summary_dicts.append(summary)
+            output_full_dicts.append(full)
+
+    #print(output_full_dicts,back_output_summary_dicts)
+    full_df = pd.DataFrame(sorted(output_full_dicts, key=len, reverse=True))
+    summary_df = pd.DataFrame(output_summary_dicts)
+    return full_df, summary_df
 
 #function to convert pandas column to local time
 def createdOn_tz_convert(x):
@@ -284,10 +295,19 @@ def main():
             print("\n***** DOWNLOADING DATA FROM SYNAPSE TABLES *****")
             mybplab_table_dataframes = get_data_from_many_tables(syn,relevant_table_dicts, record_list)
             print("\n***** DOWNLOADING JSON DATA FROM SYNAPSE *****")
-            #bp_json_df = download_jsons_and_assemble_metadata(syn,mybplab_table_dataframes)
+            bp_json_df, bmap_front_df, bmap_back_df = download_jsons_and_assemble_metadata(syn,mybplab_table_dataframes)
         except synapseclient.core.exceptions.SynapseTimeoutError:
             print('Connection lost - retrying!')
         break
+
+    print("\n***** EXTRACTING BODYMAP DATA FROM JSONS *****")
+    full_bmap_df, summary_bmap_df =  extract_bodymap_data(bmap_front_json_df.merge(unique_sexes,how='left', on = ['healthCode']),bmap_back_json_df.merge(unique_sexes,how='left', on = ['healthCode']))
+
+    # make folders to save data in
+    if not os.path.exists('data_results'):
+        os.makedirs('data_results')
+    if not os.path.exists('data_results/bodymap_data'):
+        os.makedirs('data_results/bodymap_data')
 
     table_list = ('Body and Mind-v6', 'Body and Mind-v7', 'Morning-v4', 'Morning-v5', 'Night-v8', 'Night-v9')
     df_out = pd.DataFrame()
@@ -300,7 +320,8 @@ def main():
     #bp_json_df.to_csv("1_0_raw_bloodpressure_jsons.csv", index=False)
     df_out  = df_out.fillna({'createdOnTimeZone':0})
     df_out['createdOn_local'] = df_out.apply(createdOn_tz_convert,axis=1)
-    df_out.to_csv("1_0_check_in_data.csv",index=False)
+    df = df.sort_values('recordId').drop_duplicates('recordId',keep='last')
+    df_out.to_csv("data_results/1_0_check_in_data.csv",index=False)
 
 main()
 
