@@ -335,6 +335,12 @@ def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes, ch
 
     
     ep_extra_data = ep_extra_data.dropna(subset=['healthCode'])
+    ep_extra_data.to_csv("ep_extra.csv")
+    enhanced_profile_data.to_csv("ep.csv")
+    enhanced_profile_data = pd.read_csv("ep.csv")
+    ep_extra_data = pd.read_csv("ep_extra.csv")
+    os.remove("ep.csv")
+    os.remove("ep_extra.csv")
     enhanced_profile_data  = enhanced_profile_data.append(ep_extra_data)
     check_in_data['checkinNum'] = check_in_data.groupby('healthCode')['createdOn'].rank(method='first')
     check_in_data['createdOn_local'] = check_in_data.apply(createdOn_tz_convert,axis=1)
