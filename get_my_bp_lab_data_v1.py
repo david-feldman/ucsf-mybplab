@@ -332,9 +332,12 @@ def main():
             #print(tab["table_label"])
             #print(tab["dataframe"].columns)
     #bp_json_df.to_csv("1_0_raw_bloodpressure_jsons.csv", index=False)
+    #BODYMAP
+    full_bmap_df.to_csv('data_results/bodymap_data/bodymap_full_results.csv',index=False)
+    summary_bmap_df.to_csv('data_results/bodymap_data/bodymap_summary_results.csv',index=False)
     df_out  = df_out.fillna({'createdOnTimeZone':0})
     df_out['createdOn_local'] = df_out.apply(createdOn_tz_convert,axis=1)
-    df = df.sort_values('recordId').drop_duplicates('recordId',keep='last')
+    df_out = df_out.sort_values('recordId').drop_duplicates('recordId',keep='last')
     df_out.to_csv("data_results/1_0_check_in_data.csv",index=False)
 
 main()
