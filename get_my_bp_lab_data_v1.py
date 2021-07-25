@@ -67,6 +67,7 @@ def get_relevant_tables_and_record_list(syn_connection, table_dicts):
       #tables excluded based upon offline requirements
       exclude_tables = []
       relevant_table_list = [tab for tab in relevant_table_list if tab not in exclude_tables]
+      print(relevant_table_list)
       record_list = health_data_filtered['recordId'].unique().tolist()
       relevant_table_dicts = [d for d in table_dicts if d['table_label'] in relevant_table_list]
       return relevant_table_dicts, record_list
@@ -120,7 +121,7 @@ def generate_list_of_task_types(syn_connection, dataframe_dicts):
 
 def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
     file_handle_dicts = []
-    bodymap_table_list = ['Morning-v4','Morning-v5']
+    bodymap_table_list = ['Night-v8','Night-v9']
     bp_metadata_df = pd.DataFrame()
     bmap_back_metadata_df = pd.DataFrame()
     bmap_front_metadata_df = pd.DataFrame()
@@ -159,7 +160,9 @@ def download_jsons_and_assemble_metadata(syn_connection, dataframe_dicts):
 
     file_handle_and_path_df = pd.DataFrame(file_handle_dicts)
     bp_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BP'].reset_index(drop=True).merge(bp_metadata_df,how='inner',on = ['file_handle_id','table_label'])
-    return bp_output_data, bmap_back_metadata_df, bmap_front_metadata_df
+    bmap_back_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BodyMapBack'].reset_index(drop=True).merge(bmap_back_metadata_df,how='inner',on = ['file_handle_id','table_label'])
+    bmap_front_json_output_data = file_handle_and_path_df[file_handle_and_path_df['type'] == 'BodyMapFront'].reset_index(drop=True).merge(bmap_front_metadata_df,how='inner',on = ['file_handle_id','table_label'])
+    return bp_output_data, bmap_back_json_output_data, bmap_front_json_output_data
 
 def extract_bodymap_data(bmap_front_df, bmap_back_df):
     # image sample dimensions
@@ -171,13 +174,17 @@ def extract_bodymap_data(bmap_front_df, bmap_back_df):
     output_full_dicts = []
     output_summary_dicts = []
 
+    bmap_front_df.to_csv("bmap_front.csv")
+    bmap_back_df.to_csv("bmap_back.csv")
+
     for x in [{'df':bmap_back_df,'male':MALE_BACK_RATIO,'female':FEMALE_BACK_RATIO},{'df':bmap_front_df,'male':MALE_FRONT_RATIO,'female':FEMALE_FRONT_RATIO}]:
         curr_df = x['df']
         for idx, row in curr_df.iterrows():
             summary = {}
             full = {}
-            summary.update({"healthCode":row["healthCode"],"recordId":row["recordId"],'answers.sex':row['answers.sex'],'table_label':row['table_label'],'type':row['type']})
-            full.update({"healthCode":row["healthCode"],"recordId":row["recordId"],'answers.sex':row['answers.sex'],'table_label':row['table_label'],'type':row['type']})
+            
+            summary.update({"healthCode":row["healthCode"],"recordId":row["recordId"],'answers.sex':row['answers.sex'],'table_label':row['table_label']})
+            full.update({"healthCode":row["healthCode"],"recordId":row["recordId"],'answers.sex':row['answers.sex'],'table_label':row['table_label']})
             with open(row['path'],encoding="utf8") as f:
                  data = json.load(f)
             ctr = 0
@@ -280,6 +287,12 @@ def merge_and_extract_enhanced_profile_and_check_in(mybplab_table_dataframes):
 
     return enhanced_profile_data, check_in_data
 
+def get_sexes(dataframe_dicts):
+    df = [i["dataframe"] for i in dataframe_dicts if i["table_label"] == 'Background Survey-v3'][0]
+    df = df[["healthCode","answers.sex","uploadDate"]]
+    df = df.sort_values('uploadDate').drop_duplicates('healthCode',keep='last')
+    return df
+
 def main():
     #static mapping of data tables
     table_dicts = get_table_mapping_from_local_file('all_tables.csv')
@@ -295,7 +308,8 @@ def main():
             print("\n***** DOWNLOADING DATA FROM SYNAPSE TABLES *****")
             mybplab_table_dataframes = get_data_from_many_tables(syn,relevant_table_dicts, record_list)
             print("\n***** DOWNLOADING JSON DATA FROM SYNAPSE *****")
-            bp_json_df, bmap_front_df, bmap_back_df = download_jsons_and_assemble_metadata(syn,mybplab_table_dataframes)
+            bp_json_df, bmap_front_json_df, bmap_back_json_df = download_jsons_and_assemble_metadata(syn,mybplab_table_dataframes)
+            unique_sexes = get_sexes(mybplab_table_dataframes)
         except synapseclient.core.exceptions.SynapseTimeoutError:
             print('Connection lost - retrying!')
         break
